@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>員工打卡系統</h2>
+
+<label for="name">姓名:</label><br>
+<input type="text" id="name" name="name"><br>
+
+<button id="clockIn">上班打卡</button>
+<button id="clockOut">下班打卡</button>
+
+<script>
+  document.getElementById('clockIn').addEventListener('click', function() {
+    clock('in');
+  });
+
+  document.getElementById('clockOut').addEventListener('click', function() {
+    clock('out');
+  });
+
+  function clock(type) {
+    var name = document.getElementById('name').value;
+    if (!name) {
+      alert('請輸入姓名!');
+      return;
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var lat = position.coords.latitude;
+        var long = position.coords.longitude;
+        var time = new Date();
+        sendData(name, type, time, lat, long);
+      });
+    } else {
+      alert('Geolocation 不被您的瀏覽器支援');
+    }
+  }
+
+  function sendData(name, type, time, lat, long) {
+    var data = {
+      'name': name,
+      'type': type,
+      'time': time.toString(),
+      'lat': lat,
+      'long': long
+    };
+    
+    // Replace with your Apps Script's web app URL.
+    var url = 'https://script.google.com/macros/s/AKfycby-KXUOlX6_jcV3Z-BZ8DzN1TH4hYWX7XTTKB0UPeSfqKyHsQ8zYm58UMQeu_h7qpuB/exec';
+    
+    fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.text();
+    })
+    .then((data) => {
+      console.log('Success:', data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+  }
+</script>
+
+</body>
+</html>
